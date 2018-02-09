@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge' >
+  <meta charset="utf-8">
+  <title>Streamline demo</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.34.0/codemirror.min.css" async=true>
+  <style type="text/css" media="screen">
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    background: #1B294A;
+  }
+  .editor {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+  }
+  </style>
+</head>
+<body>
+  <canvas id='scene'></canvas>
+  <div class='editor'>
+    <textarea id='code' cols='30' rows='3'></textarea>
+  </div>
+  <script src="../dist/streamline.js"></script>
+  <script src="demo.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.34.0/codemirror.min.js' async=true></script>
+</body>
+</html>

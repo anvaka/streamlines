@@ -1,0 +1,29 @@
+{
+  "name": "streamlines",
+  "version": "1.0.0",
+  "description": "Streamlines calculator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anvaka/streamlines.git"
+  },
+  "keywords": [
+    "streamlines",
+    "vector",
+    "field",
+    "evenly",
+    "spaced"
+  ],
+  "author": "Andrei Kashcha",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/anvaka/streamlines/issues"
+  },
+  "homepage": "https://github.com/anvaka/streamlines#readme",
+  "devDependencies": {
+    "tap": "^11.1.0"
+  }
+}
