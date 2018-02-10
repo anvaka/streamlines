@@ -76,7 +76,7 @@ streamlines({
 
 The library does not depend on any particular rendering engine, and can be used in the
 browser or node.js environment. However, for your convenience and reference I've added
-a simple canvas.js renderer:
+a [simple canvas renderer](https://github.com/anvaka/streamlines/blob/master/lib/renderTo.js):
 
 ``` js
 // Let's assume you have a <canvas id='scene'></canvas> in your document:
