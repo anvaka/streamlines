@@ -92,6 +92,8 @@ streamlines({
 }).run();
 ```
 
+[Here is a JSBin](http://jsbin.com/butugid/2/edit?html,js,output) for you to try.
+
 ## Async
 
 The library is asynchronous in its nature. This is done mostly to give you more control
