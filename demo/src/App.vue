@@ -2,7 +2,7 @@
   <div id="app">
     <div class='controls-container'>
       <div class='controls'>
-        <a href='#' @click.prevent='draw' :class='{dirty: settingsPanel.isDirty}'>Draw!</a>
+        <a href='#' @click.prevent='draw' :class='{dirty: settingsPanel.isDirty}'>Redraw</a>
         <a href='#' @click.prevent='toggleSettings' class='action'>{{(settingsPanel.collapsed ? "Edit..." : "Close Editor")}}</a>
         <a href='#' @click.prevent='generateNewFunction'>Randomize</a>
       </div>
@@ -58,11 +58,10 @@
                 <li>Increasing this value makes animation complete faster at risk of some curves missing their turns</li>
                 <li>Making this value smaller makes individual pixel placement more accurate</li>
               </ul>
-              <p>Default value is <b>0.1</b></p>
             </div>
           </div>
           <div class='row'>
-            <div class='col'>Steps per iteration</div>
+            <div class='col'>Drawing speed</div>
             <div class='col'><input type='number' :step='stepsPerIterationDelta' v-model='stepsPerIteration' @keyup.enter='onSubmit' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" ></div>
             <help-icon @show='stepsPerIterationHelp = !stepsPerIterationHelp' :class='{open: stepsPerIterationHelp}'></help-icon>
           </div>
@@ -73,7 +72,18 @@
                 <li>Increasing this value makes animation complete faster. Setting it too high can freeze the browser</li>
                 <li>Making this value smaller makes individual pixel placement more prominent, creates effect of mystery.</li>
               </ul>
-              <p>Default value is <b>30</b></p>
+            </div>
+          </div>
+          <div class='row'>
+            <div class='col'>Line Color</div>
+            <div class="col">
+              <color-picker :color='lineColor' @changed='updateLineColor'></color-picker>
+            </div>
+          </div>
+          <div class='row'>
+            <div class='col'>Background color</div>
+            <div class="col">
+              <color-picker :color='fillColor' @changed='updateFillColor'></color-picker>
             </div>
           </div>
           <div class='bounding-box'>
@@ -98,6 +108,7 @@
 
 <script>
 import CodeEditor from './components/CodeEditor';
+import ColorPicker from './components/ColorPicker';
 import HelpIcon from './components/Icon';
 
 var isSmallScreen = require('./lib/isSmallScreen');
@@ -109,6 +120,7 @@ export default {
   name: 'App',
   components: {
     CodeEditor,
+    ColorPicker,
     HelpIcon
   },
   data() {
@@ -117,6 +129,10 @@ export default {
       settingsPanel: appState.settingsPanel,
       fieldCode: appState.fieldCode,
       bounds: appState.bounds,
+
+      lineColor: appState.getLineColor(),
+      fillColor: appState.getFillColor(),
+
       timeStep: appState.getIntegrationTimeStep(),
       integrationStepHelp: false,
 
@@ -147,8 +163,14 @@ export default {
     'bounds.maxX': function() { this.moveBoundingBox(); }
   },
   methods: {
-    draw() {
-      appState.redraw();
+    draw() { appState.redraw(); },
+    updateLineColor(c) {
+       appState.setLineColor(c.r, c.g, c.b, c.a); 
+       this.lineColor = appState.getLineColor();
+    },
+    updateFillColor(c) {
+       appState.setFillColor(c.r, c.g, c.b, c.a); 
+       this.fillColor = appState.getFillColor();
     },
     toggleSettings() {
       this.settingsPanel.collapsed = !this.settingsPanel.collapsed;
@@ -156,8 +178,7 @@ export default {
     },
     generateNewFunction() {
        var code = generateFunction();
-       appState.fieldCode.setCode(code);
-       appState.redraw();
+       appState.fieldCode.setCode(code, true);
     },
     moveBoundingBox() {
       appState.moveBoundingBox(this.bounds);
@@ -192,7 +213,6 @@ function exponentialStep(value) {
 <style lang='stylus'>
 @import './shared.styl';
 
-
 * {
   box-sizing: border-box;
   -webkit-touch-callout: none;
@@ -206,6 +226,10 @@ a {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+.row.error {
+  background-color: severe-error-background;
+  color: primary-text;
 }
 .controls-container {
   z-index: 1;
@@ -348,7 +372,7 @@ a.about-link {
 }
 
 @keyframes blink {
-    from { background: rgba(10, 25, 54, 0.22); }
+    from { background: rgba(10, 25, 54, 1); }
     to { background: rgba(24, 63, 154, 1); }
 }
 .controls {
@@ -367,8 +391,8 @@ a.about-link {
     align-items: center;
   }
   a.dirty {
-    background-color: #183f9a;
-    animation: blink 1500ms ease-in-out infinite alternate;
+    background-color: rgba(24, 63, 154, 1)
+    // animation: blink 1500ms ease-in-out infinite alternate;
   }
 
   a:first-child {

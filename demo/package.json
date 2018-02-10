@@ -12,7 +12,8 @@
   "dependencies": {
     "ngraph.events": "0.0.4",
     "vue": "^2.5.2",
-    "vue-codemirror-lite": "^1.0.3"
+    "vue-codemirror-lite": "^1.0.3",
+    "vue-color": "^2.4.4"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

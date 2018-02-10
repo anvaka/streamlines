@@ -9,17 +9,23 @@ var defaultCode = `function getVelocity(p) {
   };
 }`
 
-var boundingBox = {left: -5, top: -2.5, width: 10, height: 5}
+var boundingBox = {left: -5, top: -5, width: 10, height: 10}
 var fieldCode = {
   code: defaultCode,
   error: null,
-  setCode(newCode) {
+  isImmediate: false,
+  setCode(newCode, immediate) {
     var newVectorField = compileVectorFieldFunction(newCode);
     if (!newVectorField) return; // error
     fieldCode.error = null;
     fieldCode.code = newCode;
     streamLineGeneratorOptions.vectorField = newVectorField;
-    dirty();
+    if (immediate) {
+      redraw();
+    } else if (!fieldCode.immediate) {
+      dirty();
+    }
+    fieldCode.immediate = immediate;
   }
 }
 
@@ -27,12 +33,15 @@ var streamLineGeneratorOptions = {
   vectorField: null,
   seed: seedPoint,
   boundingBox,
-  stepsPerIteration: 30,
+  stepsPerIteration: 15,
   timeStep: 0.01,
-  dSep: 0.25,
-  dTest: 0.01,
+  dSep: 0.1,
+  dTest: 0.005,
   onPointAdded,
 };
+
+var lineColor = 'rgba(255, 255, 255, 0.6)';
+var fillColor = 'rgba(27, 41, 74, 1.0)';
 
 window.addEventListener('resize', dirty);
 
@@ -58,6 +67,16 @@ var appState = {
     dirty();
   },
 
+  getLineColor() { return lineColor },
+  setLineColor(r, g, b, a) { 
+    lineColor = `rgba(${r}, ${g}, ${b}, ${a})`; 
+    dirty();
+  },
+  getFillColor() { return fillColor; },
+  setFillColor(r, g, b, a) {
+    fillColor = `rgba(${r}, ${g}, ${b}, ${a})`; 
+    dirty();
+  },
   getStepsPerIteration() { return streamLineGeneratorOptions.stepsPerIteration; },
   setStepsPerIteration(newValue) { 
     streamLineGeneratorOptions.stepsPerIteration = getNumber(newValue, streamLineGeneratorOptions.stepsPerIteration);
@@ -141,6 +160,8 @@ function redraw() {
   canvas.width = width;
   canvas.height = height;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = fillColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   render();
 }
@@ -161,7 +182,7 @@ function render() {
 
 function onPointAdded(a, b) {
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+  ctx.strokeStyle = lineColor;
   a = transform(a);
   b = transform(b);
   ctx.moveTo(a.x, a.y);
@@ -174,6 +195,8 @@ function onPointAdded(a, b) {
 function transform(pt) {
   var tx = (pt.x - boundingBox.left)/boundingBox.width;
   var ty = (pt.y - boundingBox.top)/boundingBox.height;
+  // var ar = width/height;
+  //tx /= ar;
   return {
     x: tx * width,
     y: (1 - ty) * height
