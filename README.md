@@ -92,7 +92,7 @@ streamlines({
 }).run();
 ```
 
-[Here is a JSBin](http://jsbin.com/butugid/2/edit?html,js,output) for you to try.
+[Here is a JSBin](http://jsbin.com/miwuyav/2/edit?html,js,output) for you to try.
 
 ## Async
 
