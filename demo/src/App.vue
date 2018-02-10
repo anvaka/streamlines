@@ -103,6 +103,7 @@
         </div>
       </div>
     </div>
+    <a href="https://github.com/anvaka/streamlines" class='about-link'>Source code</a>
   </div>
 </template>
 
@@ -368,7 +369,6 @@ a.about-link {
   padding-left: 7px;
   display: flex;
   align-items: center;
-  width: 83px;
 }
 
 @keyframes blink {

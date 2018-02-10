@@ -1,4 +1,3 @@
-var isSmallScreen = require('./isSmallScreen.js');
 var streamline = require('../../../index.js');
 
 var defaultCode = `function getVelocity(p) {
@@ -89,7 +88,7 @@ var appState = {
     dirty();
   },
   settingsPanel: {
-    collapsed: isSmallScreen(),
+    collapsed: true
   },
   moveBoundingBox,
   bounds: readBoundsFromBBox(boundingBox),
