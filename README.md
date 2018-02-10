@@ -3,19 +3,27 @@
 The library builds streamlines for arbitrary vector fields, trying to keep uniform distance
 between them.
 
+![demo](https://i.imgur.com/dC5cN8P.gif)
+
 # usage
 
+You can play with interactive demo, though keep in mind - it's just a demo created in one night.
+True value of this repository is in the library itself :).
+
+Demo is here: https://anvaka.github.io/streamlines
+
 ## get it
+
 Use it with your favorite bundler:
 
 ```
-npm install streamlines
+npm install @anvaka/streamlines
 ```
 
 Or include a precompiled version:
 
 ```
-// TODO: Link
+https://cdn.rawgit.com/anvaka/streamlines/master/dist/streamlines.min.js
 ```
 
 If you are using precompiled version, it will be available under global name `window.streamlines`.
@@ -104,6 +112,8 @@ renderer.run();
 // something has happened and you want to stop?
 renderer.dispose();
 ```
+
+If you want to understand the algorithm, please [read this paper](http://web.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/papers/Jobard.pdf) - the library follows it closely.
 
 # License
 
