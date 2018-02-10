@@ -1,8 +1,9 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.streamline = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.streamlines = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
 /**
  * Computes streamlines of a vector field based on http://web.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/papers/Jobard.pdf
  */
 module.exports = computeStreamlines;
+module.exports.renderTo = require('./lib/renderTo');
 
 var Vector = require('./lib/Vector');
 var createLookupGrid = require('./lib/createLookupGrid');
@@ -16,6 +17,10 @@ var STATE_SEED_STREAMLINE = 4;
 
 function computeStreamlines(options) {
   if (!options) throw new Error('Configuration is required to compute streamlines');
+  if (!options.boundingBox) {
+    console.warn('No bounding box passed to streamline. Creating default one');
+    options.boundingBox = {left: -5, top: -5, width: 10, height: 10};
+  }
   normalizeBoundingBox(options.boundingBox);
 
   if (!options.seed) {
@@ -47,15 +52,37 @@ function computeStreamlines(options) {
   var state = STATE_INIT;
   var finishedStreamlineIntegrators = [];
   var streamlineIntegrator = createStreamlineIntegrator(options.seed, grid, options);
+  var disposed = false;
+  var running = false;
+  var nextTimeout;
   // It is asynchronous. If this is used in a browser we don't want to freeze the UI thread.
   // On the other hand, if you need this to be sync - we can extend the API. Just let me know.
-  setTimeout(nextStep, 0);
 
-  return new Promise((pResolve) => {
+  return {
+    run: run,
+    dispose: dispose
+  } 
+
+  function run() {
+    if (running) return;
+    running = true;
+    nextTimeout = setTimeout(nextStep, 0);
+
+    return new Promise(assignResolve)
+  }
+
+  function assignResolve(pResolve) {
     resolve = pResolve;
-  })
+  }
+
+  function dispose() {
+    disposed = true;
+    clearTimeout(nextTimeout);
+  }
 
   function nextStep() {
+    if (disposed) return;
+
     for (var i = 0; i < stepsPerIteration; ++i) {
       if (state === STATE_INIT) initProcessing();
       if (state === STATE_STREAMLINE) continueStreamline();
@@ -63,12 +90,12 @@ function computeStreamlines(options) {
       if (state === STATE_SEED_STREAMLINE) seedStreamline();
 
       if (state === STATE_DONE) {
-        resolve(finishedStreamlineIntegrators.map(s => s.getStreamline()));
+        resolve(options);
         return;
       }
     }
 
-    setTimeout(nextStep, 0);
+    nextTimeout = setTimeout(nextStep, 0);
   }
 
   function initProcessing() {
@@ -112,7 +139,7 @@ function computeStreamlines(options) {
     var streamLinePoints = streamlineIntegrator.getStreamline();
     if (streamLinePoints.length > 1) {
       finishedStreamlineIntegrators.push(streamlineIntegrator);
-      if (options.onStreamlineAdded) options.onStreamlineAdded(streamLinePoints);
+      if (options.onStreamlineAdded) options.onStreamlineAdded(streamLinePoints, options);
     }
   }
 }
@@ -136,70 +163,89 @@ function normalizeBoundingBox(bbox) {
 function assertNumber(x, msg) {
   if (typeof x !== 'number') throw new Error(msg);
 }
-},{"./lib/Vector":2,"./lib/createLookupGrid":3,"./lib/streamLineIntegrator":5}],2:[function(require,module,exports){
-class Vector {
-  constructor(x, y) {
+},{"./lib/Vector":2,"./lib/createLookupGrid":4,"./lib/renderTo":5,"./lib/streamLineIntegrator":7}],2:[function(require,module,exports){
+var classCallCheck = require('./classCheck');
+
+var Vector = function () {
+  function Vector(x, y) {
+    classCallCheck(this, Vector);
+
     this.x = x;
     this.y = y;
   }
 
-  equals(other) {
+  Vector.prototype.equals = function equals(other) {
     return this.x === other.x && this.y === other.y;
-  }
+  };
 
-  add(other) {
+  Vector.prototype.add = function add(other) {
     return new Vector(this.x + other.x, this.y + other.y);
-  }
+  };
 
-  mulScalar(scalar) {
+  Vector.prototype.mulScalar = function mulScalar(scalar) {
     return new Vector(this.x * scalar, this.y * scalar);
-  }
+  };
 
-  length() {
+  Vector.prototype.length = function length() {
     return Math.sqrt(this.x * this.x + this.y * this.y);
-  }
+  };
 
-  normalize() {
+  Vector.prototype.normalize = function normalize() {
     var l = this.length();
     this.x /= l;
     this.y /= l;
-  }
+  };
 
-  distanceTo(other) {
+  Vector.prototype.distanceTo = function distanceTo(other) {
     var dx = other.x - this.x;
     var dy = other.y - this.y;
 
     return Math.sqrt(dx * dx + dy * dy);
-  }
-}
+  };
+
+  return Vector;
+}();
 
 module.exports = Vector;
-},{}],3:[function(require,module,exports){
+},{"./classCheck":3}],3:[function(require,module,exports){
+module.exports = function classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+     throw new TypeError("Cannot call a class as a function");
+  }
+}
+},{}],4:[function(require,module,exports){
+var classCallCheck = require('./classCheck');
+
 module.exports = createLookupGrid;
 
-class Cell {
-  constructor() {
+var Cell = function () {
+  function Cell() {
+    classCallCheck(this, Cell);
+
     this.children = null;
   }
 
-  occupy(point) {
+  Cell.prototype.occupy = function occupy(point) {
     if (!this.children) this.children = [];
     this.children.push(point);
-  }
+  };
 
-  isTaken(x, y, checkCallback) {
+  Cell.prototype.isTaken = function isTaken(x, y, checkCallback) {
     if (!this.children) return false;
 
-    for(var i = 0; i < this.children.length; ++i) {
+    for (var i = 0; i < this.children.length; ++i) {
       var p = this.children[i];
-      var dx = p.x - x, dy = p.y - y;
+      var dx = p.x - x,
+          dy = p.y - y;
       var dist = Math.sqrt(dx * dx + dy * dy);
       if (checkCallback(dist, p)) return true;
     }
 
     return false;
-  }
-}
+  };
+
+  return Cell;
+}();
 
 function createLookupGrid(bbox, dSep) {
   var bboxSize = Math.max(bbox.width, bbox.height);
@@ -209,9 +255,9 @@ function createLookupGrid(bbox, dSep) {
   var cells = [];
 
   var api = {
-    occupyCoordinates,
-    isTaken,
-    isOutside
+    occupyCoordinates: occupyCoordinates,
+    isTaken: isTaken,
+    isOutside: isOutside
   };
 
   return api;
@@ -284,7 +330,39 @@ function createLookupGrid(bbox, dSep) {
     }
   }
 }
-},{}],4:[function(require,module,exports){
+},{"./classCheck":3}],5:[function(require,module,exports){
+module.exports = renderTo;
+
+function renderTo(canvas) {
+  if (!canvas) throw new Error('Canvas is required');
+
+  var ctx = canvas.getContext('2d');
+  var width = canvas.width;
+  var height = canvas.height;
+
+  return onPointAdded;
+
+  function onPointAdded(a, b, config) {
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+    a = transform(a, config.boundingBox);
+    b = transform(b, config.boundingBox);
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  function transform(pt, boundingBox) {
+    var tx = (pt.x - boundingBox.left)/boundingBox.width;
+    var ty = (pt.y - boundingBox.top)/boundingBox.height;
+    return {
+      x: tx * width,
+      y: (1 - ty) * height
+    }
+  }
+}
+},{}],6:[function(require,module,exports){
 /**
  * Performs Runge-Kutta 4th order integration.
  */
@@ -303,7 +381,7 @@ function rk4(point, timeStep, getVelocity) {
   var res = k1.mulScalar(timeStep / 6).add(k2.mulScalar(timeStep/3)).add(k3.mulScalar(timeStep/3)).add(k4.mulScalar(timeStep/6));
   return res;
 }
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var Vector = require('./Vector');
 var rk4 = require('./rk4');
 var createLookupGrid = require('./createLookupGrid');
@@ -323,9 +401,10 @@ function createStreamlineIntegrator(start, grid, config) {
   var ownGrid = createLookupGrid(config.boundingBox, config.timeStep * 0.9);
 
   return {
+    start: start,
     next: next,
     getStreamline: getStreamline,
-    getNextValidSeed
+    getNextValidSeed: getNextValidSeed
   }
 
   function getStreamline() {
@@ -339,23 +418,36 @@ function createStreamlineIntegrator(start, grid, config) {
       var p = points[lastCheckedSeed];
       var v = normalizedVectorField(p);
       if (!v) continue;
-      // Check orthogonal coordinates
+      // Check one normal. We just set c = p + n, where n is orthogonal to v.
+      // Since v is unit vector we can multiply it by scaler (config.dSep) to get to the
+      // right point. It is also easy to find normal in 2d: normal to (x, y) is just (-y, x).
+      // You can get it by applying 2d rotation matrix.)
       var cx = p.x - v.y * config.dSep;
       var cy = p.y + v.x * config.dSep;
 
-      if (!grid.isOutside(cx, cy) && !grid.isTaken(cx, cy, checkDSep)) return new Vector(cx, cy);
+      if (!grid.isOutside(cx, cy) && !grid.isTaken(cx, cy, checkDSep)) {
+        // this will let us check the other side. When we get back
+        // into this method, the point `cx, cy` will be taken (by construction of another streamline)
+        // And we will throw through to the next orthogonal check.
+        lastCheckedSeed -= 1; 
+        return new Vector(cx, cy);
+      }
 
-      var nx = p.x + v.y * config.dSep;
-      var ny = p.y - v.x * config.dSep;
-      if (!grid.isOutside(nx, ny) && !grid.isTaken(nx, ny, checkDSep)) return new Vector(nx, ny);
+      // Check orthogonal coordinates on the other side (o = p - n).
+      var ox = p.x + v.y * config.dSep;
+      var oy = p.y - v.x * config.dSep;
+      if (!grid.isOutside(ox, oy) && !grid.isTaken(ox, oy, checkDSep)) return new Vector(ox, oy);
     }
   }
 
   function checkDTest(distanceToCandidate) {
+    if (isSame(distanceToCandidate, config.dTest)) return false;
     return distanceToCandidate < config.dTest;
   }
 
   function checkDSep(distanceToCandidate) {
+    if (isSame(distanceToCandidate, config.dSep)) return false;
+
     return distanceToCandidate < config.dSep;
   }
 
@@ -391,12 +483,14 @@ function createStreamlineIntegrator(start, grid, config) {
       }
 
       if (state === DONE) {
-        points.forEach(p => {
-          grid.occupyCoordinates(p);
-        });
+        points.forEach(occupyPointInGrid);
         return true;
       }
     }
+  }
+
+  function occupyPointInGrid(p) {
+    grid.occupyCoordinates(p);
   }
 
   function growForward() {
@@ -435,7 +529,7 @@ function createStreamlineIntegrator(start, grid, config) {
   function notifyPointAdded(point) {
     var shouldPause = false;
     if (config.onPointAdded) {
-      shouldPause = config.onPointAdded(point, points[state === FORWARD ? points.length - 2 : 1]);
+      shouldPause = config.onPointAdded(point, points[state === FORWARD ? points.length - 2 : 1], config);
     } 
 
     return shouldPause;
@@ -455,5 +549,10 @@ function createStreamlineIntegrator(start, grid, config) {
     return new Vector(p.x/l, p.y/l);
   }
 }
-},{"./Vector":2,"./createLookupGrid":3,"./rk4":4}]},{},[1])(1)
+
+function isSame(a, b) {
+  // to avoid floating point error
+  return Math.abs(a - b) < 1e-4;
+}
+},{"./Vector":2,"./createLookupGrid":4,"./rk4":6}]},{},[1])(1)
 });

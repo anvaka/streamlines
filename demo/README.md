@@ -1,6 +1,7 @@
 # streamlines-demo
 
-> A demo for the stream lines library
+This is just a demo for the streamline generation library. It is nice to quickly experiment
+with the library, but I encourage you to try the library independently to get its full potential.
 
 ## Build Setup
 
@@ -8,14 +9,6 @@
 # install dependencies
 npm install
 
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
+# serve with hot reload at localhost:8890
+npm start
 ```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).

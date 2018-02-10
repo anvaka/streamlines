@@ -2,6 +2,7 @@
  * Computes streamlines of a vector field based on http://web.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/papers/Jobard.pdf
  */
 module.exports = computeStreamlines;
+module.exports.renderTo = require('./lib/renderTo');
 
 var Vector = require('./lib/Vector');
 var createLookupGrid = require('./lib/createLookupGrid');
@@ -15,6 +16,10 @@ var STATE_SEED_STREAMLINE = 4;
 
 function computeStreamlines(options) {
   if (!options) throw new Error('Configuration is required to compute streamlines');
+  if (!options.boundingBox) {
+    console.warn('No bounding box passed to streamline. Creating default one');
+    options.boundingBox = {left: -5, top: -5, width: 10, height: 10};
+  }
   normalizeBoundingBox(options.boundingBox);
 
   if (!options.seed) {
@@ -53,19 +58,26 @@ function computeStreamlines(options) {
   // On the other hand, if you need this to be sync - we can extend the API. Just let me know.
 
   return {
-    run() {
-      if (running) return;
-      running = true;
-      nextTimeout = setTimeout(nextStep, 0);
-        return new Promise((pResolve) => {
-          resolve = pResolve;
-        })
-    },
-    dispose() {
-      disposed = true;
-      clearTimeout(nextTimeout);
-    }
+    run: run,
+    dispose: dispose
   } 
+
+  function run() {
+    if (running) return;
+    running = true;
+    nextTimeout = setTimeout(nextStep, 0);
+
+    return new Promise(assignResolve)
+  }
+
+  function assignResolve(pResolve) {
+    resolve = pResolve;
+  }
+
+  function dispose() {
+    disposed = true;
+    clearTimeout(nextTimeout);
+  }
 
   function nextStep() {
     if (disposed) return;
@@ -77,7 +89,7 @@ function computeStreamlines(options) {
       if (state === STATE_SEED_STREAMLINE) seedStreamline();
 
       if (state === STATE_DONE) {
-        resolve(finishedStreamlineIntegrators.map(s => s.getStreamline()));
+        resolve(options);
         return;
       }
     }
@@ -126,7 +138,7 @@ function computeStreamlines(options) {
     var streamLinePoints = streamlineIntegrator.getStreamline();
     if (streamLinePoints.length > 1) {
       finishedStreamlineIntegrators.push(streamlineIntegrator);
-      if (options.onStreamlineAdded) options.onStreamlineAdded(streamLinePoints);
+      if (options.onStreamlineAdded) options.onStreamlineAdded(streamLinePoints, options);
     }
   }
 }

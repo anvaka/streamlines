@@ -4,7 +4,8 @@
   "description": "Streamlines calculator",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tap test/*.js",
+    "build": "browserify -s streamlines ./index.js > dist/streamlines.js && uglifyjs dist/streamlines.js > dist/streamlines.min.js"
   },
   "repository": {
     "type": "git",
