@@ -46,15 +46,30 @@ function computeStreamlines(options) {
   var state = STATE_INIT;
   var finishedStreamlineIntegrators = [];
   var streamlineIntegrator = createStreamlineIntegrator(options.seed, grid, options);
+  var disposed = false;
+  var running = false;
+  var nextTimeout;
   // It is asynchronous. If this is used in a browser we don't want to freeze the UI thread.
   // On the other hand, if you need this to be sync - we can extend the API. Just let me know.
-  setTimeout(nextStep, 0);
 
-  return new Promise((pResolve) => {
-    resolve = pResolve;
-  })
+  return {
+    run() {
+      if (running) return;
+      running = true;
+      nextTimeout = setTimeout(nextStep, 0);
+        return new Promise((pResolve) => {
+          resolve = pResolve;
+        })
+    },
+    dispose() {
+      disposed = true;
+      clearTimeout(nextTimeout);
+    }
+  } 
 
   function nextStep() {
+    if (disposed) return;
+
     for (var i = 0; i < stepsPerIteration; ++i) {
       if (state === STATE_INIT) initProcessing();
       if (state === STATE_STREAMLINE) continueStreamline();
@@ -67,7 +82,7 @@ function computeStreamlines(options) {
       }
     }
 
-    setTimeout(nextStep, 0);
+    nextTimeout = setTimeout(nextStep, 0);
   }
 
   function initProcessing() {
