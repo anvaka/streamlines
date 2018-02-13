@@ -7,7 +7,7 @@ between them.
 
 # usage
 
-You can play with interactive demo, though keep in mind - it's just a demo created in one night.
+You can play with the interactive demo, though keep in mind - it's just a demo created in one night.
 True value of this repository is in the library itself :).
 
 Demo is here: https://anvaka.github.io/streamlines
