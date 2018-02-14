@@ -14,39 +14,47 @@ var STATE_PROCESS_QUEUE = 2;
 var STATE_DONE = 3;
 var STATE_SEED_STREAMLINE = 4;
 
-function computeStreamlines(options) {
-  if (!options) throw new Error('Configuration is required to compute streamlines');
-  if (!options.boundingBox) {
+function computeStreamlines(protoOptions) {
+  var options = Object.create(null);
+  if (!protoOptions) throw new Error('Configuration is required to compute streamlines');
+  if (!protoOptions.boundingBox) {
     console.warn('No bounding box passed to streamline. Creating default one');
     options.boundingBox = {left: -5, top: -5, width: 10, height: 10};
+  } else {
+    options.boundingBox = {}
+    Object.assign(options.boundingBox, protoOptions.boundingBox);
   }
+
   normalizeBoundingBox(options.boundingBox);
 
-  if (!options.seed) {
+  var boundingBox = options.boundingBox
+  options.vectorField = protoOptions.vectorField;
+  options.onStreamlineAdded = protoOptions.onStreamlineAdded;
+  options.onPointAdded = protoOptions.onPointAdded;
+
+  if (!protoOptions.seed) {
     options.seed = new Vector(
-      Math.random() * options.boundingBox.width + options.boundingBox.left,
-      Math.random() * options.boundingBox.height + options.boundingBox.top
+      Math.random() * boundingBox.width + boundingBox.left,
+      Math.random() * boundingBox.height + boundingBox.top
     );
   } else {
-    // This is not very polite to replace props for the consumers.
-    options.seed = new Vector(options.seed.x, options.seed.y);
+    options.seed = new Vector(protoOptions.seed.x, protoOptions.seed.y);
   }
 
-  var boundingBox = options.boundingBox
-
   // Separation between streamlines. Naming according to the paper.
-  if (!(options.dSep > 0)) options.dSep = 1./Math.max(boundingBox.width, boundingBox.height);
+  options.dSep = protoOptions.dSep > 0 ? protoOptions.dSep : 1./Math.max(boundingBox.width, boundingBox.height);
 
   // When should we stop integrating a streamline.
-  if (!(options.dTest > 0)) options.dTest = options.dSep * 0.5;
+  options.dTest = protoOptions.dTest > 0 ? protoOptions.dTest : options.dSep * 0.5;
 
   // Lookup grid helps to quickly tell if there are points nearby
   var grid = createLookupGrid(boundingBox, options.dSep);
 
   // Integration time step.
-  if (!(options.timeStep > 0)) options.timeStep = 0.01;
+  options.timeStep = protoOptions.timeStep > 0 ? protoOptions.timeStep : 0.01;
+  options.stepsPerIteration = protoOptions.stepsPerIteration > 0 ? protoOptions.stepsPerIteration : 10;
 
-  var stepsPerIteration = options.stepsPerIteration || 10;
+  var stepsPerIteration = options.stepsPerIteration;
   var resolve;
   var state = STATE_INIT;
   var finishedStreamlineIntegrators = [];
