@@ -73,14 +73,19 @@ function refreshEditor(isCollapsed) {
 .code-editor {
 maxHeight = 320px;
 
-.CodeMirror {
-	height: auto;
-  max-height: maxHeight;
-	font-size: 14px;
-  z-index: 0;
-  padding-bottom: 8px;
-}
-  .cm-s-oceanic-next.CodeMirror{
+  .CodeMirror {
+    height: auto;
+    max-height: maxHeight;
+    font-size: 14px;
+    z-index: 0;
+    padding-bottom: 8px;
+    .CodeMirror-scroll {
+      height: auto;
+      max-height: maxHeight;
+    }
+  }
+
+  .cm-s-oceanic-next.CodeMirror {
     background: transparent;
   }
 }
