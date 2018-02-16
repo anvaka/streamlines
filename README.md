@@ -12,6 +12,9 @@ True value of this repository is in the library itself :).
 
 Demo is here: https://anvaka.github.io/streamlines
 
+More advanced example is [wind-map](https://anvaka.github.io/wind-lines/) - visualization of the winds
+map with evenly spaced streamlines.
+
 ## get it
 
 Use it with your favorite bundler:

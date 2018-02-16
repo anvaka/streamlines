@@ -168,5 +168,5 @@ function normalizeBoundingBox(bbox) {
 }
 
 function assertNumber(x, msg) {
-  if (typeof x !== 'number') throw new Error(msg);
+  if (typeof x !== 'number' || Number.isNaN(x)) throw new Error(msg);
 }
