@@ -57,7 +57,7 @@ streamlines({
   vectorField(p) { return p; },
 
   // Defines bounding box of the vector field
-  bondingBox: {left: -5, top: -5, width: 10, height: 10},
+  boundingBox: {left: -5, top: -5, width: 10, height: 10},
 
   // Defines the first point where integration should start. If this is
   // not specified a random point inside boundingBox is selected
