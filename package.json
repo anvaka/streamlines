@@ -1,6 +1,6 @@
 {
   "name": "@anvaka/streamlines",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Streamlines calculator",
   "main": "index.js",
   "scripts": {
