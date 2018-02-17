@@ -53,6 +53,7 @@ function computeStreamlines(protoOptions) {
   // Integration time step.
   options.timeStep = protoOptions.timeStep > 0 ? protoOptions.timeStep : 0.01;
   options.stepsPerIteration = protoOptions.stepsPerIteration > 0 ? protoOptions.stepsPerIteration : 10;
+  options.maxTimePerIteration = protoOptions.maxTimePerIteration > 0 ? protoOptions.maxTimePerIteration : 1000;
 
   var stepsPerIteration = options.stepsPerIteration;
   var resolve;
@@ -89,12 +90,15 @@ function computeStreamlines(protoOptions) {
 
   function nextStep() {
     if (disposed) return;
+    var maxTimePerIteration = options.maxTimePerIteration;
+    var start = window.performance.now();
 
     for (var i = 0; i < stepsPerIteration; ++i) {
       if (state === STATE_INIT) initProcessing();
       if (state === STATE_STREAMLINE) continueStreamline();
       if (state === STATE_PROCESS_QUEUE) processQueue();
       if (state === STATE_SEED_STREAMLINE) seedStreamline();
+      if (window.performance.now() - start > maxTimePerIteration) break;
 
       if (state === STATE_DONE) {
         resolve(options);
