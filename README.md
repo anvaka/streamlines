@@ -26,33 +26,33 @@ npm install @anvaka/streamlines
 Or include a precompiled version:
 
 ```
-https://cdn.rawgit.com/anvaka/streamlines/v1.0.1/dist/streamlines.min.js
+https://cdn.jsdelivr.net/gh/anvaka/streamlines@v1.0.1/dist/streamlines.min.js
 ```
 
 If you are using precompiled version, it will be available under global name `window.streamlines`.
 
 ## use it
 
-``` js
-var vectorField = p => ({x: -p.y, y: p.x});
+```js
+var vectorField = p => ({ x: -p.y, y: p.x });
 
 streamlines({
   vectorField,
   onPointAdded(from, to) {
     // called when new point is added to a line
-    console.log('point created', from, to);
+    console.log("point created", from, to);
   },
   onStreamlineAdded(points) {
     // Points is just a sequence of points with `x, y` coordinates through which
     // the streamline goes.
-    console.log('stream line created. Number of points: ', points.length)
+    console.log("stream line created. Number of points: ", points.length);
   }
 }).run();
 ```
 
 The library allows you to configure various aspects of computation:
 
-``` js
+```js
 
 streamlines({
   // Vector field is a function that given a point p returns 2d vector
@@ -81,14 +81,16 @@ The library does not depend on any particular rendering engine, and can be used 
 browser or node.js environment. However, for your convenience and reference I've added
 a [simple canvas renderer](https://github.com/anvaka/streamlines/blob/master/lib/renderTo.js):
 
-``` js
+```js
 // Let's assume you have a <canvas id='scene'></canvas> in your document:
-var canvas = document.getElementById('scene');
+var canvas = document.getElementById("scene");
 
 // Then you can render to it with this bit of code:
 streamlines({
   // As usual, define your vector field:
-  vectorField(p) { return {x: -p.y, y: p.x}; },
+  vectorField(p) {
+    return { x: -p.y, y: p.x };
+  },
 
   // And print the output to this canvas:
   onPointAdded: streamlines.renderTo(canvas)
@@ -103,13 +105,16 @@ The library is asynchronous in its nature. This is done mostly to give you more 
 over streamline construction process.
 
 The downside is that it is harder to understand the code. It is written in a way so that
-it can be interrupted at almost every computational step. 
+it can be interrupted at almost every computational step.
 
 If you want to cancel rendering, call `dispose` method:
 
-``` js
-
-var renderer = streamlines({vectorField(p) {return p}});
+```js
+var renderer = streamlines({
+  vectorField(p) {
+    return p;
+  }
+});
 
 // Launch the construction
 renderer.run();
