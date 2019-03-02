@@ -16,18 +16,19 @@ var STATE_SEED_STREAMLINE = 4;
 
 function computeStreamlines(protoOptions) {
   var options = Object.create(null);
-  if (!protoOptions) throw new Error('Configuration is required to compute streamlines');
+  if (!protoOptions)
+    throw new Error('Configuration is required to compute streamlines');
   if (!protoOptions.boundingBox) {
     console.warn('No bounding box passed to streamline. Creating default one');
-    options.boundingBox = {left: -5, top: -5, width: 10, height: 10};
+    options.boundingBox = { left: -5, top: -5, width: 10, height: 10 };
   } else {
-    options.boundingBox = {}
+    options.boundingBox = {};
     Object.assign(options.boundingBox, protoOptions.boundingBox);
   }
 
   normalizeBoundingBox(options.boundingBox);
 
-  var boundingBox = options.boundingBox
+  var boundingBox = options.boundingBox;
   options.vectorField = protoOptions.vectorField;
   options.onStreamlineAdded = protoOptions.onStreamlineAdded;
   options.onPointAdded = protoOptions.onPointAdded;
@@ -42,24 +43,36 @@ function computeStreamlines(protoOptions) {
   }
 
   // Separation between streamlines. Naming according to the paper.
-  options.dSep = protoOptions.dSep > 0 ? protoOptions.dSep : 1./Math.max(boundingBox.width, boundingBox.height);
+  options.dSep =
+    protoOptions.dSep > 0
+      ? protoOptions.dSep
+      : 1 / Math.max(boundingBox.width, boundingBox.height);
 
   // When should we stop integrating a streamline.
-  options.dTest = protoOptions.dTest > 0 ? protoOptions.dTest : options.dSep * 0.5;
+  options.dTest =
+    protoOptions.dTest > 0 ? protoOptions.dTest : options.dSep * 0.5;
 
   // Lookup grid helps to quickly tell if there are points nearby
   var grid = createLookupGrid(boundingBox, options.dSep);
 
   // Integration time step.
   options.timeStep = protoOptions.timeStep > 0 ? protoOptions.timeStep : 0.01;
-  options.stepsPerIteration = protoOptions.stepsPerIteration > 0 ? protoOptions.stepsPerIteration : 10;
-  options.maxTimePerIteration = protoOptions.maxTimePerIteration > 0 ? protoOptions.maxTimePerIteration : 1000;
+  options.stepsPerIteration =
+    protoOptions.stepsPerIteration > 0 ? protoOptions.stepsPerIteration : 10;
+  options.maxTimePerIteration =
+    protoOptions.maxTimePerIteration > 0
+      ? protoOptions.maxTimePerIteration
+      : 1000;
 
   var stepsPerIteration = options.stepsPerIteration;
   var resolve;
   var state = STATE_INIT;
   var finishedStreamlineIntegrators = [];
-  var streamlineIntegrator = createStreamlineIntegrator(options.seed, grid, options);
+  var streamlineIntegrator = createStreamlineIntegrator(
+    options.seed,
+    grid,
+    options
+  );
   var disposed = false;
   var running = false;
   var nextTimeout;
@@ -69,14 +82,14 @@ function computeStreamlines(protoOptions) {
   return {
     run: run,
     dispose: dispose
-  } 
+  };
 
   function run() {
     if (running) return;
     running = true;
     nextTimeout = setTimeout(nextStep, 0);
 
-    return new Promise(assignResolve)
+    return new Promise(assignResolve);
   }
 
   function assignResolve(pResolve) {
@@ -122,7 +135,11 @@ function computeStreamlines(protoOptions) {
 
     var validCandidate = currentStreamLine.getNextValidSeed();
     if (validCandidate) {
-      streamlineIntegrator = createStreamlineIntegrator(validCandidate, grid, options);
+      streamlineIntegrator = createStreamlineIntegrator(
+        validCandidate,
+        grid,
+        options
+      );
       state = STATE_STREAMLINE;
     } else {
       finishedStreamlineIntegrators.shift();
@@ -150,13 +167,15 @@ function computeStreamlines(protoOptions) {
     var streamLinePoints = streamlineIntegrator.getStreamline();
     if (streamLinePoints.length > 1) {
       finishedStreamlineIntegrators.push(streamlineIntegrator);
-      if (options.onStreamlineAdded) options.onStreamlineAdded(streamLinePoints, options);
+      if (options.onStreamlineAdded)
+        options.onStreamlineAdded(streamLinePoints, options);
     }
   }
 }
 
 function normalizeBoundingBox(bbox) {
-  var requiredBoxMessage = 'Bounding box {left, top, width, height} is required';
+  var requiredBoxMessage =
+    'Bounding box {left, top, width, height} is required';
   if (!bbox) throw new Error(requiredBoxMessage);
 
   assertNumber(bbox.left, requiredBoxMessage);
@@ -168,7 +187,8 @@ function normalizeBoundingBox(bbox) {
   assertNumber(bbox.width, requiredBoxMessage);
   assertNumber(bbox.height, requiredBoxMessage);
 
-  if (bbox.width <= 0 || bbox.height <= 0) throw new Error('Bounding box cannot be empty');
+  if (bbox.width <= 0 || bbox.height <= 0)
+    throw new Error('Bounding box cannot be empty');
 }
 
 function assertNumber(x, msg) {
