@@ -25,6 +25,6 @@
   },
   "homepage": "https://github.com/anvaka/streamlines#readme",
   "devDependencies": {
-    "tap": "^11.1.0"
+    "tap": "^12.5.3"
   }
 }

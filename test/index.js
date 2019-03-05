@@ -1,4 +1,10 @@
 var test = require('tap').test;
+if (typeof window === 'undefined') {
+  window = {
+    performance: require('perf_hooks').performance
+  }
+}
+
 var computeStreamlines = require('../');
 
 test('it computes a streamline', (t) => {
