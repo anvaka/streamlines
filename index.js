@@ -32,12 +32,17 @@ function computeStreamlines(protoOptions) {
   options.vectorField = protoOptions.vectorField;
   options.onStreamlineAdded = protoOptions.onStreamlineAdded;
   options.onPointAdded = protoOptions.onPointAdded;
+  options.forwardOnly = protoOptions.forwardOnly;
 
   if (!protoOptions.seed) {
     options.seed = new Vector(
       Math.random() * boundingBox.width + boundingBox.left,
       Math.random() * boundingBox.height + boundingBox.top
     );
+  } else if (Array.isArray(protoOptions.seed)) {
+    var seed = protoOptions.seed.shift();
+    options.seed = new Vector(seed.x, seed.y);
+    options.seedArray = protoOptions.seed;
   } else {
     options.seed = new Vector(protoOptions.seed.x, protoOptions.seed.y);
   }

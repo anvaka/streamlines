@@ -1,5 +1,12 @@
 # streamlines
 
+This is a fork of https://github.com/anvaka/streamlines - a brilliant library based on [this paper](http://web.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/papers/Jobard.pdf). This fork added two things:
+
+* `seed` param can be an array, and all points for the array will be used (if valid) before selecting random points.
+* `forwardOnly` param is added, and if set to `true` line will be drawn only in one direction from the seed (current implementation goes back to seed point and draws in the other direction as well).
+
+----
+
 The library builds streamlines for arbitrary vector fields, trying to keep uniform distance
 between them.
 
