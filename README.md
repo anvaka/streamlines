@@ -1,12 +1,5 @@
 # streamlines
 
-This is a fork of https://github.com/anvaka/streamlines - a brilliant library based on [this paper](http://web.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/papers/Jobard.pdf). This fork added two things:
-
-* `seed` param can be an array, and all points for the array will be used (if valid) before selecting random points.
-* `forwardOnly` param is added, and if set to `true` line will be drawn only in one direction from the seed (current implementation goes back to seed point and draws in the other direction as well).
-
-----
-
 The library builds streamlines for arbitrary vector fields, trying to keep uniform distance
 between them.
 
@@ -71,6 +64,8 @@ streamlines({
 
   // Defines the first point where integration should start. If this is
   // not specified a random point inside boundingBox is selected
+  // You can pass array of seed points, they are going to be used one by one
+  // if they satisfy the rules.
   seed: {x: -1, y: 1},
 
   // Separation distance between new streamlines.
@@ -80,7 +75,11 @@ streamlines({
   dTest: 0.25,
 
   // Integration time step (passed to RK4 method.)
-  timeStep: 0.01
+  timeStep: 0.01,
+
+  // If set to true, lines are going to be drawn from the seed points
+  // only in the direction of the vector field
+  forwardOnly: false
 }).run();
 ```
 
