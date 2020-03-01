@@ -64,6 +64,8 @@ streamlines({
 
   // Defines the first point where integration should start. If this is
   // not specified a random point inside boundingBox is selected
+  // You can pass array of seed points, they are going to be used one by one
+  // if they satisfy the rules.
   seed: {x: -1, y: 1},
 
   // Separation distance between new streamlines.
@@ -73,7 +75,11 @@ streamlines({
   dTest: 0.25,
 
   // Integration time step (passed to RK4 method.)
-  timeStep: 0.01
+  timeStep: 0.01,
+
+  // If set to true, lines are going to be drawn from the seed points
+  // only in the direction of the vector field
+  forwardOnly: false
 }).run();
 ```
 
