@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.streamlines = f()}})(function(){var define,module,exports;return (function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.streamlines = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * Computes streamlines of a vector field based on http://web.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/papers/Jobard.pdf
  */
@@ -17,49 +17,68 @@ var STATE_SEED_STREAMLINE = 4;
 
 function computeStreamlines(protoOptions) {
   var options = Object.create(null);
-  if (!protoOptions) throw new Error('Configuration is required to compute streamlines');
+  if (!protoOptions)
+    throw new Error('Configuration is required to compute streamlines');
   if (!protoOptions.boundingBox) {
     console.warn('No bounding box passed to streamline. Creating default one');
-    options.boundingBox = {left: -5, top: -5, width: 10, height: 10};
+    options.boundingBox = { left: -5, top: -5, width: 10, height: 10 };
   } else {
-    options.boundingBox = {}
+    options.boundingBox = {};
     Object.assign(options.boundingBox, protoOptions.boundingBox);
   }
 
   normalizeBoundingBox(options.boundingBox);
 
-  var boundingBox = options.boundingBox
+  var boundingBox = options.boundingBox;
   options.vectorField = protoOptions.vectorField;
   options.onStreamlineAdded = protoOptions.onStreamlineAdded;
   options.onPointAdded = protoOptions.onPointAdded;
+  options.forwardOnly = protoOptions.forwardOnly;
 
   if (!protoOptions.seed) {
     options.seed = new Vector(
       Math.random() * boundingBox.width + boundingBox.left,
       Math.random() * boundingBox.height + boundingBox.top
     );
+  } else if (Array.isArray(protoOptions.seed)) {
+    var seed = protoOptions.seed.shift();
+    options.seed = new Vector(seed.x, seed.y);
+    options.seedArray = protoOptions.seed;
   } else {
     options.seed = new Vector(protoOptions.seed.x, protoOptions.seed.y);
   }
 
   // Separation between streamlines. Naming according to the paper.
-  options.dSep = protoOptions.dSep > 0 ? protoOptions.dSep : 1./Math.max(boundingBox.width, boundingBox.height);
+  options.dSep =
+    protoOptions.dSep > 0
+      ? protoOptions.dSep
+      : 1 / Math.max(boundingBox.width, boundingBox.height);
 
   // When should we stop integrating a streamline.
-  options.dTest = protoOptions.dTest > 0 ? protoOptions.dTest : options.dSep * 0.5;
+  options.dTest =
+    protoOptions.dTest > 0 ? protoOptions.dTest : options.dSep * 0.5;
 
   // Lookup grid helps to quickly tell if there are points nearby
   var grid = createLookupGrid(boundingBox, options.dSep);
 
   // Integration time step.
   options.timeStep = protoOptions.timeStep > 0 ? protoOptions.timeStep : 0.01;
-  options.stepsPerIteration = protoOptions.stepsPerIteration > 0 ? protoOptions.stepsPerIteration : 10;
+  options.stepsPerIteration =
+    protoOptions.stepsPerIteration > 0 ? protoOptions.stepsPerIteration : 10;
+  options.maxTimePerIteration =
+    protoOptions.maxTimePerIteration > 0
+      ? protoOptions.maxTimePerIteration
+      : 1000;
 
   var stepsPerIteration = options.stepsPerIteration;
   var resolve;
   var state = STATE_INIT;
   var finishedStreamlineIntegrators = [];
-  var streamlineIntegrator = createStreamlineIntegrator(options.seed, grid, options);
+  var streamlineIntegrator = createStreamlineIntegrator(
+    options.seed,
+    grid,
+    options
+  );
   var disposed = false;
   var running = false;
   var nextTimeout;
@@ -69,14 +88,14 @@ function computeStreamlines(protoOptions) {
   return {
     run: run,
     dispose: dispose
-  } 
+  };
 
   function run() {
     if (running) return;
     running = true;
     nextTimeout = setTimeout(nextStep, 0);
 
-    return new Promise(assignResolve)
+    return new Promise(assignResolve);
   }
 
   function assignResolve(pResolve) {
@@ -90,12 +109,15 @@ function computeStreamlines(protoOptions) {
 
   function nextStep() {
     if (disposed) return;
+    var maxTimePerIteration = options.maxTimePerIteration;
+    var start = window.performance.now();
 
     for (var i = 0; i < stepsPerIteration; ++i) {
       if (state === STATE_INIT) initProcessing();
       if (state === STATE_STREAMLINE) continueStreamline();
       if (state === STATE_PROCESS_QUEUE) processQueue();
       if (state === STATE_SEED_STREAMLINE) seedStreamline();
+      if (window.performance.now() - start > maxTimePerIteration) break;
 
       if (state === STATE_DONE) {
         resolve(options);
@@ -119,7 +141,11 @@ function computeStreamlines(protoOptions) {
 
     var validCandidate = currentStreamLine.getNextValidSeed();
     if (validCandidate) {
-      streamlineIntegrator = createStreamlineIntegrator(validCandidate, grid, options);
+      streamlineIntegrator = createStreamlineIntegrator(
+        validCandidate,
+        grid,
+        options
+      );
       state = STATE_STREAMLINE;
     } else {
       finishedStreamlineIntegrators.shift();
@@ -147,13 +173,15 @@ function computeStreamlines(protoOptions) {
     var streamLinePoints = streamlineIntegrator.getStreamline();
     if (streamLinePoints.length > 1) {
       finishedStreamlineIntegrators.push(streamlineIntegrator);
-      if (options.onStreamlineAdded) options.onStreamlineAdded(streamLinePoints, options);
+      if (options.onStreamlineAdded)
+        options.onStreamlineAdded(streamLinePoints, options);
     }
   }
 }
 
 function normalizeBoundingBox(bbox) {
-  var requiredBoxMessage = 'Bounding box {left, top, width, height} is required';
+  var requiredBoxMessage =
+    'Bounding box {left, top, width, height} is required';
   if (!bbox) throw new Error(requiredBoxMessage);
 
   assertNumber(bbox.left, requiredBoxMessage);
@@ -165,12 +193,14 @@ function normalizeBoundingBox(bbox) {
   assertNumber(bbox.width, requiredBoxMessage);
   assertNumber(bbox.height, requiredBoxMessage);
 
-  if (bbox.width <= 0 || bbox.height <= 0) throw new Error('Bounding box cannot be empty');
+  if (bbox.width <= 0 || bbox.height <= 0)
+    throw new Error('Bounding box cannot be empty');
 }
 
 function assertNumber(x, msg) {
-  if (typeof x !== 'number') throw new Error(msg);
+  if (typeof x !== 'number' || Number.isNaN(x)) throw new Error(msg);
 }
+
 },{"./lib/Vector":2,"./lib/createLookupGrid":4,"./lib/renderTo":5,"./lib/streamLineIntegrator":7}],2:[function(require,module,exports){
 var classCallCheck = require('./classCheck');
 
@@ -435,6 +465,12 @@ function createStreamlineIntegrator(start, grid, config) {
       var cx = p.x - v.y * config.dSep;
       var cy = p.y + v.x * config.dSep;
 
+      if (Array.isArray(config.seedArray) && config.seedArray.length > 0) {
+        var seed = config.seedArray.shift();
+        cx = seed.x;
+        cy = seed.y;
+      }
+
       if (!grid.isOutside(cx, cy) && !grid.isTaken(cx, cy, checkDSep)) {
         // this will let us check the other side. When we get back
         // into this method, the point `cx, cy` will be taken (by construction of another streamline)
@@ -474,8 +510,12 @@ function createStreamlineIntegrator(start, grid, config) {
           if (shouldPause) return;
         } else {
           // Reset position to start, and grow backwards:
-          pos = start;
-          state = BACKWARD;
+          if (config.forwardOnly)  {
+            state = DONE;
+          } else {
+            pos = start;
+            state = BACKWARD;
+          }
         }
       } 
       if (state === BACKWARD) {
