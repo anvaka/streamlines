@@ -47,6 +47,14 @@ function computeStreamlines(protoOptions) {
     options.seed = new Vector(protoOptions.seed.x, protoOptions.seed.y);
   }
 
+  // Pass "maximumPointsPerLine" only when it is function or a number
+  if (
+    typeof protoOptions.maximumPointsPerLine === 'function' ||
+    typeof protoOptions.maximumPointsPerLine === 'number'
+  ) {
+    options.maximumPointsPerLine = protoOptions.maximumPointsPerLine;
+  }
+
   // Separation between streamlines. Naming according to the paper.
   options.dSep =
     protoOptions.dSep > 0
