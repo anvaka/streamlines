@@ -4,7 +4,7 @@
   "description": "Streamlines calculator",
   "main": "index.js",
   "scripts": {
-    "test": "tap test/*.js",
+    "test": "tap --branches=60 --lines=60 --statements=60 --functions=60  test/*.js",
     "build": "browserify -s streamlines ./index.js > dist/streamlines.js && uglifyjs dist/streamlines.js > dist/streamlines.min.js"
   },
   "repository": {
@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/anvaka/streamlines#readme",
   "devDependencies": {
-    "tap": "^12.5.3"
+    "tap": "^15.0.9",
+    "uglify-js": "^3.13.9"
   }
 }

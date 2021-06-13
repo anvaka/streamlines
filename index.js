@@ -86,8 +86,13 @@ function computeStreamlines(protoOptions) {
 
   return {
     run: run,
+    getGrid: getGrid,
     dispose: dispose
   };
+  
+  function getGrid() {
+    return grid;
+  }
 
   function run() {
     if (running) return;
