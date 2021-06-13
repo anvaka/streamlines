@@ -87,8 +87,13 @@ function computeStreamlines(protoOptions) {
 
   return {
     run: run,
+    getGrid: getGrid,
     dispose: dispose
   };
+  
+  function getGrid() {
+    return grid;
+  }
 
   function run() {
     if (running) return;
@@ -282,6 +287,24 @@ var Cell = function () {
     return false;
   };
 
+  Cell.prototype.getMinDistance = function getMinDistance(x, y) {
+    let minDistance = Infinity;
+
+    if (!this.children) return minDistance;
+
+    for (var i = 0; i < this.children.length; ++i) {
+      var p = this.children[i];
+      var dx = p.x - x,
+          dy = p.y - y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < minDistance) {
+        minDistance = dist;
+      }
+    }
+
+    return minDistance;
+  }
+
   return Cell;
 }();
 
@@ -295,10 +318,37 @@ function createLookupGrid(bbox, dSep) {
   var api = {
     occupyCoordinates: occupyCoordinates,
     isTaken: isTaken,
-    isOutside: isOutside
+    isOutside: isOutside,
+    findNearest: findNearest
   };
 
   return api;
+
+  function findNearest(x, y) {
+    var cx = gridX(x);
+    var cy = gridY(y);
+    let minDistance = Infinity;
+
+    for (var col = -1; col < 2; ++col) {
+      var currentCellX = cx + col;
+      if (currentCellX < 0 || currentCellX >= cellsCount) continue;
+      
+      var cellRow = cells.get(currentCellX);
+      if (!cellRow) continue;
+
+      for (var row = -1; row < 2; ++row) {
+        var currentCellY = cy + row;
+        if (currentCellY < 0 || currentCellY >= cellsCount) continue;
+
+        var cellCol = cellRow.get(currentCellY);
+        if(!cellCol) continue;
+        let d = cellCol.getMinDistance(x, y);
+        if (d < minDistance) minDistance = d;
+      }
+    }
+
+    return minDistance;
+  }
 
   function isOutside(x, y) {
     return x < bbox.left || x > bbox.left + bbox.width || 
