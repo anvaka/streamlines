@@ -26,7 +26,7 @@ npm install @anvaka/streamlines
 Or include a precompiled version:
 
 ```
-https://cdn.jsdelivr.net/gh/anvaka/streamlines@v1.0.1/dist/streamlines.min.js
+https://cdn.jsdelivr.net/gh/anvaka/streamlines@v1.3.0/dist/streamlines.min.js
 ```
 
 If you are using precompiled version, it will be available under global name `window.streamlines`.
