@@ -28,6 +28,7 @@ var fieldCode = {
   }
 }
 
+var seedPoint = selectSeedPoint();
 var streamLineGeneratorOptions = {
   vectorField: null,
   seed: seedPoint,
@@ -93,9 +94,6 @@ var appState = {
   moveBoundingBox,
   bounds: readBoundsFromBBox(boundingBox),
 }
-
-var seedPoint = selectSeedPoint();
-
 
 module.exports = appState
 
