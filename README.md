@@ -131,6 +131,11 @@ renderer.dispose();
 
 If you want to understand the algorithm, please [read this paper](http://web.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/papers/Jobard.pdf) - the library follows it closely.
 
+## More examples
+
+* https://github.com/anvaka/noisylines - renders streamlines from perlin noise
+* https://jsbin.com/kuluvam/1/edit?html,js,output - shows how to set width/color of line segments
+
 # License
 
 MIT
