@@ -636,7 +636,7 @@ function createStreamlineIntegrator(start, grid, config) {
   }
 
   function normalizedVectorField(p) {
-    var p = config.vectorField(p);
+    var p = config.vectorField(p, points, state === DONE);
     if (!p) return; // Assume singularity
     if (Number.isNaN(p.x) || Number.isNaN(p.y)) return; // Not defined. e.g. Math.log(-1);
 
