@@ -2,10 +2,22 @@
   "name": "@anvaka/streamlines",
   "version": "1.5.0",
   "description": "Streamlines calculator",
-  "main": "index.js",
+  "type": "module",
+  "main": "dist/streamlines.cjs",
+  "module": "dist/streamlines.esm.js",
+  "unpkg": "dist/streamlines.umd.js",
+  "jsdelivr": "dist/streamlines.umd.js",
+  "exports": {
+    ".": {
+  "import": "./dist/streamlines.esm.js",
+  "require": "./dist/streamlines.cjs"
+    }
+  },
+  "sideEffects": false,
   "scripts": {
-    "test": "tap --branches=60 --lines=60 --statements=60 --functions=60  test/*.js",
-    "build": "browserify -s streamlines ./index.js > dist/streamlines.js && uglifyjs dist/streamlines.js > dist/streamlines.min.js"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "vite build"
   },
   "repository": {
     "type": "git",
@@ -25,7 +37,8 @@
   },
   "homepage": "https://github.com/anvaka/streamlines#readme",
   "devDependencies": {
-    "tap": "^16.0.1",
-    "uglify-js": "^3.13.9"
+    "uglify-js": "^3.19.3",
+    "vite": "^7.1.2",
+    "vitest": "^2.1.4"
   }
 }

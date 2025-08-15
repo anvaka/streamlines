@@ -1,20 +1,24 @@
 /**
  * Computes streamlines of a vector field based on http://web.cs.ucdavis.edu/~ma/SIGGRAPH02/course23/notes/papers/Jobard.pdf
  */
-module.exports = computeStreamlines;
-module.exports.renderTo = require('./lib/renderTo');
-// ESM interop for bundlers (Vite/Rollup) when imported as a dependency
-module.exports.default = module.exports;
+import Vector from './lib/Vector.js';
+import createLookupGrid from './lib/createLookupGrid.js';
+import createStreamlineIntegrator from './lib/streamLineIntegrator.js';
+import renderTo from './lib/renderTo.js';
 
-var Vector = require('./lib/Vector');
-var createLookupGrid = require('./lib/createLookupGrid');
-var createStreamlineIntegrator = require('./lib/streamLineIntegrator');
+export { renderTo };
+export default computeStreamlines;
 
 var STATE_INIT = 0;
 var STATE_STREAMLINE = 1;
 var STATE_PROCESS_QUEUE = 2;
 var STATE_DONE = 3;
 var STATE_SEED_STREAMLINE = 4;
+
+// Cross-environment performance timer (works in node and browser)
+const __perf = (typeof globalThis !== 'undefined' && globalThis.performance && typeof globalThis.performance.now === 'function')
+  ? globalThis.performance
+  : { now: () => Date.now() };
 
 function computeStreamlines(protoOptions) {
   var options = Object.create(null);
@@ -116,14 +120,14 @@ function computeStreamlines(protoOptions) {
   function nextStep() {
     if (disposed) return;
     var maxTimePerIteration = options.maxTimePerIteration;
-    var start = window.performance.now();
+  var start = __perf.now();
 
     for (var i = 0; i < stepsPerIteration; ++i) {
       if (state === STATE_INIT) initProcessing();
       if (state === STATE_STREAMLINE) continueStreamline();
       if (state === STATE_PROCESS_QUEUE) processQueue();
       if (state === STATE_SEED_STREAMLINE) seedStreamline();
-      if (window.performance.now() - start > maxTimePerIteration) break;
+  if (__perf.now() - start > maxTimePerIteration) break;
 
       if (state === STATE_DONE) {
         resolve(options);

@@ -23,13 +23,19 @@ Use it with your favorite bundler:
 npm install @anvaka/streamlines
 ```
 
-Or include a precompiled version:
+Or include a precompiled version (UMD) from a CDN:
 
 ```
-https://cdn.jsdelivr.net/gh/anvaka/streamlines@v1.3.0/dist/streamlines.min.js
+https://cdn.jsdelivr.net/gh/anvaka/streamlines@v1.6.0/dist/streamlines.umd.js
 ```
 
-If you are using precompiled version, it will be available under global name `window.streamlines`.
+ES module build is also available:
+
+```
+import streamlines from 'https://cdn.jsdelivr.net/gh/anvaka/streamlines@v1.6.0/dist/streamlines.esm.js';
+```
+
+If you are using the UMD build, it will be available under global name `window.streamlines`.
 
 ## use it
 
