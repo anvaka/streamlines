@@ -1,11 +1,7 @@
-var appState = require('./lib/appState');
+import appState from './lib/appState.js';
 
-var canvas = document.getElementById('scene-canvas');
-// Canvas may not be available in test run
+const canvas = document.getElementById('scene-canvas');
 if (canvas) appState.init(canvas);
 
-// Tell webpack to split bundle, and download settings UI later.
-require.ensure('@/main.js', () => {
-  // Settings UI is ready, initialize vue.js application
-  require('@/main.js');
-});
+// Lazy load UI after initial canvas init (optional, but keep behavior similar)
+import('./main.js');

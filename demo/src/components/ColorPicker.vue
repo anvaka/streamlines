@@ -1,23 +1,57 @@
 <template>
   <div class='color-container'>
-    <input type='text' @click.prevent='showPicker' :value='color' readonly class='color-label'>
+    <input type='text' @click.prevent='showPicker' :value='displayColor' readonly class='color-label'>
     <div class='picker' @click='hidePicker' v-if='opened' ref='pickerOverlay'>
-      <chrome-color-picker :value='color' :style='getPickerStyle()' @input='onChanged'></chrome-color-picker>
+      <chrome-color-picker v-model="internalColor" :style='getPickerStyle()'></chrome-color-picker>
     </div>
   </div>
 </template>
 
 <script>
-import { Chrome } from 'vue-color';
+import { Chrome } from '@ckpack/vue-color';
 export default {
   name: 'ColorPicker',
-  props: ['color'],
+  props: {
+    color: {
+      type: String,
+      required: true
+    }
+  },
   components: {
     'chrome-color-picker': Chrome
   },
   data() {
     return {
       opened: false,
+      internalColor: this.color // start with incoming rgba string
+    };
+  },
+  computed: {
+    displayColor() {
+      if (typeof this.internalColor === 'string') return this.internalColor;
+      if (this.internalColor && this.internalColor.rgba) {
+        const { r, g, b, a } = this.internalColor.rgba;
+        return `rgba(${r}, ${g}, ${b}, ${a})`;
+      }
+      return this.color;
+    }
+  },
+  watch: {
+    color(newVal) {
+      // External update from parent
+      if (newVal !== this.displayColor) this.internalColor = newVal;
+    },
+    internalColor: {
+      deep: true,
+      handler(newVal) {
+        // When picker updates, propagate rgba
+        if (newVal && newVal.rgba) {
+          this.$emit('changed', newVal.rgba);
+        } else if (typeof newVal === 'string') {
+          const parsed = this.extractRGBA(newVal);
+            this.$emit('changed', parsed);
+        }
+      }
     }
   },
   methods: {
@@ -35,8 +69,10 @@ export default {
         top: (rect.top - 179) + 'px'
       }
     },
-    onChanged(e) {
-      this.$emit('changed', e.rgba);
+    extractRGBA(str) {
+      const m = str && str.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([0-9]*\.?[0-9]+))?\s*\)/i);
+      if (!m) return { r:255,g:255,b:255,a:1 };
+      return { r:+m[1], g:+m[2], b:+m[3], a: m[4] !== undefined ? +m[4] : 1 };
     }
   }
 }

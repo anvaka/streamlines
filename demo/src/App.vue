@@ -2,7 +2,7 @@
   <div id="app">
     <div class='controls-container'>
       <div class='controls'>
-        <a href='#' @click.prevent='draw' :class='{dirty: settingsPanel.isDirty}'>Redraw</a>
+        <a href='#' @click.prevent='draw' :class='{dirty: isDirty}'>Redraw</a>
         <a href='#' @click.prevent='toggleSettings' class='action'>{{(settingsPanel.collapsed ? "Edit..." : "Close Editor")}}</a>
         <a href='#' @click.prevent='generateNewFunction'>Randomize</a>
       </div>
@@ -108,14 +108,14 @@
 </template>
 
 <script>
-import CodeEditor from './components/CodeEditor';
-import ColorPicker from './components/ColorPicker';
-import HelpIcon from './components/Icon';
+import CodeEditor from './components/CodeEditor.vue';
+import ColorPicker from './components/ColorPicker.vue';
+import HelpIcon from './components/Icon.vue';
 
-var isSmallScreen = require('./lib/isSmallScreen');
-var generateFunction = require('./lib/generate-function');
-var appState = require('./lib/appState');
-var bus = require('./bus');
+import isSmallScreen from './lib/isSmallScreen.js';
+import generateFunction from './lib/generate-function.js';
+import appState from './lib/appState.js';
+import bus from './bus.js';
 
 export default {
   name: 'App',
@@ -144,7 +144,8 @@ export default {
       densityHelp: false,
 
       proximity: appState.getIntegrationProximity(),
-      proximityHelp: false
+  proximityHelp: false,
+  isDirty: appState.settingsPanel.isDirty
     }
   },
   computed: {
@@ -164,7 +165,11 @@ export default {
     'bounds.maxX': function() { this.moveBoundingBox(); }
   },
   methods: {
-    draw() { appState.redraw(); },
+    draw() { 
+      appState.redraw(); 
+      // ensure immediate UI update in case event loop delays bus event
+      this.isDirty = false; 
+    },
     updateLineColor(c) {
        appState.setLineColor(c.r, c.g, c.b, c.a); 
        this.lineColor = appState.getLineColor();
@@ -198,6 +203,13 @@ export default {
         maxY: 5
       }
     }
+  }
+  ,created() {
+    this._onDirtyChanged = (v) => { this.isDirty = v; };
+    bus.on('dirty-changed', this._onDirtyChanged);
+  }
+  ,beforeUnmount() {
+    if (this._onDirtyChanged) bus.off('dirty-changed', this._onDirtyChanged);
   }
 }
 
@@ -375,6 +387,12 @@ a.about-link {
     from { background: rgba(10, 25, 54, 1); }
     to { background: rgba(24, 63, 154, 1); }
 }
+/* Subtle pulse for the dirty state of the Redraw button */
+@keyframes dirty-pulse {
+  0% { background-color: rgba(24, 63, 154, 1); }
+  50% { background-color: rgba(36, 84, 190, 1); }
+  100% { background-color: rgba(24, 63, 154, 1); }
+}
 .controls {
   display: flex;
   flex-shrink: 0;
@@ -391,8 +409,8 @@ a.about-link {
     align-items: center;
   }
   a.dirty {
-    background-color: rgba(24, 63, 154, 1)
-    // animation: blink 1500ms ease-in-out infinite alternate;
+  background-color: rgba(24, 63, 154, 1)
+  animation: dirty-pulse 2200ms ease-in-out infinite;
   }
 
   a:first-child {
@@ -406,6 +424,12 @@ a.about-link {
   }
   a.toggle-pause {
     flex: 0.3;
+  }
+}
+/* Respect user reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .controls a.dirty {
+    animation: none;
   }
 }
 pre.error {

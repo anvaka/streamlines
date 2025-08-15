@@ -1,4 +1,8 @@
-var streamline = require('../../../index.js');
+// Support both direct source (local dev) and package import styles without top-level await.
+// Vite will pre-bundle CJS and expose .default via interop when using the following import.
+import * as streamlinesNS from '@anvaka/streamlines';
+import bus from '../bus.js';
+const streamline = streamlinesNS.default || streamlinesNS;
 
 var defaultCode = `function getVelocity(p) {
   var l = Math.sqrt(p.x * p.x + p.y * p.y);
@@ -45,7 +49,7 @@ var fillColor = 'rgba(27, 41, 74, 1.0)';
 
 window.addEventListener('resize', dirty);
 
-var appState = {
+const appState = {
   isDirty: false,
   init,
   fieldCode,
@@ -89,13 +93,17 @@ var appState = {
     dirty();
   },
   settingsPanel: {
-    collapsed: true
+  collapsed: true,
+  // Make isDirty reactive so the Redraw button animation can stop immediately after redraw()
+  isDirty: false,
+  // Also predefine dWarning so warning visibility is reactive
+  dWarning: ''
   },
   moveBoundingBox,
   bounds: readBoundsFromBBox(boundingBox),
 }
 
-module.exports = appState
+export default appState
 
 var lastStreamLineRenderer;
 var canvas, ctx, width, height;
@@ -152,6 +160,7 @@ function getNumber(str, defaultValue) {
 
 function redraw() {
   appState.settingsPanel.isDirty = false;
+  bus.fire('dirty-changed', false);
   width = window.innerWidth;
   height = window.innerHeight;
   canvas.width = width;
@@ -165,6 +174,7 @@ function redraw() {
 
 function dirty() {
   appState.settingsPanel.isDirty = true;
+  bus.fire('dirty-changed', true);
 }
 
 function render() {

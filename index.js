@@ -3,6 +3,8 @@
  */
 module.exports = computeStreamlines;
 module.exports.renderTo = require('./lib/renderTo');
+// ESM interop for bundlers (Vite/Rollup) when imported as a dependency
+module.exports.default = module.exports;
 
 var Vector = require('./lib/Vector');
 var createLookupGrid = require('./lib/createLookupGrid');

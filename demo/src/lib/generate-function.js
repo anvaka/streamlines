@@ -142,7 +142,7 @@ function generateArguments() {
   return item.render();
 }
 
-module.exports = function generate() {
+export default function generate() {
   normalizeProbabilities();
   var vX = generateArguments();
   var vY = generateArguments();
