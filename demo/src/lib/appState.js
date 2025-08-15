@@ -2,6 +2,9 @@
 // Vite will pre-bundle CJS and expose .default via interop when using the following import.
 import * as streamlinesNS from '@anvaka/streamlines';
 import bus from '../bus.js';
+// Make fieldCode reactive so components (e.g. CodeEditor) see code updates (e.g. Randomize)
+// without needing manual event propagation.
+import { reactive } from 'vue';
 const streamline = streamlinesNS.default || streamlinesNS;
 
 var defaultCode = `function getVelocity(p) {
@@ -13,7 +16,9 @@ var defaultCode = `function getVelocity(p) {
 }`
 
 var boundingBox = {left: -5, top: -5, width: 10, height: 10}
-var fieldCode = {
+// Reactive model passed into <code-editor>. Wrapping in reactive fixes issue where
+// external updates (Randomize) didn't propagate to CodeMirror watcher.
+var fieldCode = reactive({
   code: defaultCode,
   error: null,
   isImmediate: false,
@@ -30,7 +35,7 @@ var fieldCode = {
     }
     fieldCode.immediate = immediate;
   }
-}
+})
 
 var seedPoint = selectSeedPoint();
 var streamLineGeneratorOptions = {
