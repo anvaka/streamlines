@@ -17,7 +17,8 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "vite build"
+  "build": "vite build",
+  "demo": "npm --prefix demo run dev"
   },
   "repository": {
     "type": "git",
