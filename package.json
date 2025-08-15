@@ -1,6 +1,6 @@
 {
   "name": "@anvaka/streamlines",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Streamlines calculator",
   "type": "module",
   "main": "dist/streamlines.cjs",
@@ -9,16 +9,16 @@
   "jsdelivr": "dist/streamlines.umd.js",
   "exports": {
     ".": {
-  "import": "./dist/streamlines.esm.js",
-  "require": "./dist/streamlines.cjs"
+      "import": "./dist/streamlines.esm.js",
+      "require": "./dist/streamlines.cjs"
     }
   },
   "sideEffects": false,
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-  "build": "vite build",
-  "demo": "npm --prefix demo run dev"
+    "build": "vite build",
+    "demo": "npm --prefix demo run dev"
   },
   "repository": {
     "type": "git",
