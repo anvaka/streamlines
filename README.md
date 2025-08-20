@@ -1,4 +1,4 @@
-# streamlines
+# Animated streamlines in the  Background...
 
 The library builds streamlines for arbitrary vector fields, trying to keep uniform distance
 between them.
