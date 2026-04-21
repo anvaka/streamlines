@@ -85,7 +85,17 @@ streamlines({
 
   // If set to true, lines are going to be drawn from the seed points
   // only in the direction of the vector field
-  forwardOnly: false
+  forwardOnly: false,
+
+  // By default all lines are drawn as long as they can be
+  // If integer or a function that returns a integer is passed,
+  // it will limit a number of dots per line (basically limit the length).
+  // Function makes it easy to pass random values per line.
+  // Check output examples here - https://github.com/anvaka/streamlines/pull/9
+  // Usage examples:
+  // integer - maximumPointsPerLine: 200,
+  // function - maximumPointsPerLine: () => Math.round(Math.random() * 200) + 100,
+  maximumPointsPerLine: false
 }).run();
 ```
 
